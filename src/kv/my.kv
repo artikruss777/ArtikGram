@@ -1,31 +1,26 @@
 #:kivy 1.0
+#:import dp kivy.metrics.dp
+#:import sp kivy.metrics.sp
 
 <WelcomeScreen>:
     BoxLayout:
         padding: dp(40)
         orientation: 'vertical'
-
-
         Image:
             source: 'assets/icons/logo.jpg'
             size_hint_y: 1
             allow_stretch: True
             keep_ratio: True
-
-        
         Widget:
             size_hint_y: 0.4
-            
         Label:
             text: 'ArtikGram - The Ultimate Telegram Client'
             font_size: sp(24)
             size_hint_y: 0.2
             text_size: self.width, None
             halign: 'center'
-            
         Widget:
             size_hint_y: 0.2
-            
         Button:
             text: 'Start!'   
             size_hint: (0.9, None)
@@ -39,19 +34,118 @@
                     size: self.size
                     pos: self.pos
                     radius: [dp(15),]
-            
             on_press: 
                 app.root.current = 'login1'
-        
 
-<LoginScreen1>
+<LoginScreen1>:
     BoxLayout:
         orientation: 'vertical'
-        padding: 50
-        spacing: 20
-
-        
-        
+        padding: dp(30)
+        spacing: dp(20)
+        Widget:
+            size_hint_y: 0.2
+        BoxLayout:
+            orientation: 'vertical'
+            size_hint_y: 0.5
+            spacing: dp(15)
+            padding: [dp(20), 0]
+            Label:
+                text: 'Enter your phone number'
+                font_size: sp(20)
+                bold: True
+                size_hint_y: None
+                height: dp(30)
+                text_size: self.width, None
+                halign: 'center'
+            BoxLayout:
+                orientation: 'horizontal'
+                size_hint: (0.9, None)
+                height: dp(50)
+                pos_hint: {'center_x': 0.5}
+                spacing: dp(10)
+                TextInput:
+                    id: country_code_input
+                    text: '+7'
+                    hint_text: '+code'
+                    multiline: False
+                    font_size: sp(18)
+                    size_hint_x: 0.3
+                    padding: [dp(15), dp(15)]
+                    background_normal: ''
+                    background_active: ''
+                    cursor_color: 0.314, 0.0, 1, 1
+                    foreground_color: 0, 0, 0, 1
+                    canvas.before:
+                        Color:
+                            rgba: (0.95, 0.95, 0.95, 1) if self.focus else (0.9, 0.9, 0.9, 1)
+                        RoundedRectangle:
+                            pos: self.pos
+                            size: self.size
+                            radius: [dp(10),]
+                    on_text: 
+                        app.format_country_code(self)
+                TextInput:
+                    id: phone_input
+                    hint_text: '999 999 99 99'
+                    multiline: False
+                    font_size: sp(18)
+                    size_hint_x: 0.7
+                    padding: [dp(15), dp(15)]
+                    background_normal: ''
+                    background_active: ''
+                    cursor_color: 0.314, 0.0, 1, 1
+                    foreground_color: 0, 0, 0, 1
+                    canvas.before:
+                        Color:
+                            rgba: (0.95, 0.95, 0.95, 1) if self.focus else (0.9, 0.9, 0.9, 1)
+                        RoundedRectangle:
+                            pos: self.pos
+                            size: self.size
+                            radius: [dp(10),]
+                    on_text: 
+                        app.format_phone_number(self)
+            Label:
+                id: formatted_phone_label
+                text: '+7'
+                font_size: sp(14)
+                color: 0.4, 0.4, 0.4, 1
+                size_hint_y: None
+                height: dp(25)
+                text_size: self.width, None
+                halign: 'center'
+            Label:
+                text: 'A verification code will be sent to this number'
+                font_size: sp(12)
+                color: 0.6, 0.6, 0.6, 1
+                size_hint_y: None
+                height: dp(20)
+                text_size: self.width, None
+                halign: 'center'
+        BoxLayout:
+            orientation: 'vertical'
+            size_hint_y: 0.2
+            padding: [dp(40), 0]
+            Button:
+                id: continue_button
+                text: 'Continue'   
+                size_hint: (0.8, None)
+                height: dp(50)
+                pos_hint: {'center_x': 0.5}
+                background_color: 0, 0, 0, 0
+                font_size: sp(16)
+                bold: True
+                disabled: True
+                canvas.before:
+                    Color:
+                        rgba: (0.314, 0.0, 1, 1) if not self.disabled else (0.7, 0.7, 0.7, 1)
+                    RoundedRectangle:
+                        size: self.size
+                        pos: self.pos
+                        radius: [dp(12),]
+                on_press: 
+                    app.process_phone_number(country_code_input.text, phone_input.text)
+        Widget:
+            size_hint_y: 0.1
 
 ScreenManager:
     WelcomeScreen:
