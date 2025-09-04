@@ -1,0 +1,60 @@
+#:kivy 1.0
+
+<WelcomeScreen>:
+    BoxLayout:
+        padding: dp(40)
+        orientation: 'vertical'
+
+
+        Image:
+            source: 'assets/icons/logo.jpg'
+            size_hint_y: 1
+            allow_stretch: True
+            keep_ratio: True
+
+        
+        Widget:
+            size_hint_y: 0.4
+            
+        Label:
+            text: 'ArtikGram - The Ultimate Telegram Client'
+            font_size: sp(24)
+            size_hint_y: 0.2
+            text_size: self.width, None
+            halign: 'center'
+            
+        Widget:
+            size_hint_y: 0.2
+            
+        Button:
+            text: 'Start!'   
+            size_hint: (0.9, None)
+            height: dp(60)
+            pos_hint: {'center_x': 0.5}
+            background_color: 0, 0, 0, 0
+            canvas.before:
+                Color:
+                    rgba: (0.314, 0.0, 1, 1) if self.state == 'normal' else (0.251, 0.588, 0.588, 1)
+                RoundedRectangle:
+                    size: self.size
+                    pos: self.pos
+                    radius: [dp(15),]
+            
+            on_press: 
+                app.root.current = 'login1'
+        
+
+<LoginScreen1>
+    BoxLayout:
+        orientation: 'vertical'
+        padding: 50
+        spacing: 20
+
+        
+        
+
+ScreenManager:
+    WelcomeScreen:
+        name: 'welcome'
+    LoginScreen1:
+        name: 'login1'
