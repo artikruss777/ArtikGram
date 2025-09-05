@@ -75,6 +75,7 @@
                     background_active: ''
                     cursor_color: 0.314, 0.0, 1, 1
                     foreground_color: 0, 0, 0, 1
+                    input_filter: 'int'
                     canvas.before:
                         Color:
                             rgba: (0.95, 0.95, 0.95, 1) if self.focus else (0.9, 0.9, 0.9, 1)
@@ -86,7 +87,7 @@
                         app.format_country_code(self)
                 TextInput:
                     id: phone_input
-                    hint_text: '999 999 99 99'
+                    hint_text: '9999999999'
                     multiline: False
                     font_size: sp(18)
                     size_hint_x: 0.7
@@ -95,6 +96,7 @@
                     background_active: ''
                     cursor_color: 0.314, 0.0, 1, 1
                     foreground_color: 0, 0, 0, 1
+                    input_filter: 'int' 
                     canvas.before:
                         Color:
                             rgba: (0.95, 0.95, 0.95, 1) if self.focus else (0.9, 0.9, 0.9, 1)

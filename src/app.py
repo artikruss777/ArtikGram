@@ -1,59 +1,45 @@
 from kivy.app import App
 from kivy.uix.screenmanager import ScreenManager
-from src.screens.welcome import *
-from src.screens.login1 import LoginScreen1
 from kivy.properties import StringProperty, BooleanProperty
 import re
+from src.screens.welcome import *
+from src.screens.login1 import *
 from kivy.clock import Clock
-
 from kivy.lang import Builder
-
 
 class ArtikGram(App):
     def build(self):
-
         Builder.load_file('src/kv/my.kv')
         sm = ScreenManager()
         sm.add_widget(WelcomeScreen(name='welcome'))
         sm.add_widget(LoginScreen1(name='login1'))
         sm.current = 'welcome'
         return sm
-    def on_start(self):
-        self.update_phone_format()
     
     def format_country_code(self, text_input):
         text = text_input.text
         if not text.startswith('+'):
             text = '+' + text.replace('+', '')
+        
         cleaned = re.sub(r'[^\d+]', '', text)
+        
         if cleaned.startswith('++'):
             cleaned = '+' + cleaned[2:]
+        
         if text_input.text != cleaned:
             text_input.text = cleaned
+        
         self.update_phone_format()
     
     def format_phone_number(self, text_input):
         text = text_input.text
-        cursor_pos = text_input.cursor_index()
+        cleaned = re.sub(r'[^\d]', '', text)
         
-        digits = re.sub(r'\D', '', text)
-        if len(digits) > 15:
-            digits = digits[:15]
+        if len(cleaned) > 15:
+            cleaned = cleaned[:15]
         
-        formatted = ''
-        for i, digit in enumerate(digits):
-            if i == 3:
-                formatted += ' '
-            if i == 6:
-                formatted += ' '
-            if i == 8:
-                formatted += ' '
-            formatted += digit
-        
-        if text_input.text != formatted:
-            text_input.text = formatted
-            new_cursor_pos = min(cursor_pos + formatted.count(' ') - text.count(' '), len(formatted))
-            text_input.cursor = (new_cursor_pos, 0)
+        if text_input.text != cleaned:
+            text_input.text = cleaned
         
         self.update_phone_format()
     
@@ -68,16 +54,20 @@ class ArtikGram(App):
                 
             country_code = screen.ids.country_code_input.text
             phone_text = screen.ids.phone_input.text
-            phone_digits = re.sub(r'\D', '', phone_text)
             
-            formatted_phone = f"{country_code} {self.format_for_display(phone_digits)}"
-            screen.ids.formatted_phone_label.text = formatted_phone
+            country_digits = re.sub(r'[^\d]', '', country_code)
+            phone_digits = re.sub(r'[^\d]', '', phone_text)
             
-            country_digits = re.sub(r'\D', '', country_code)
-            has_country_code = len(country_digits) > 0
-            has_phone_number = len(phone_digits) >= 5
+            if phone_digits:
+                formatted_phone = self.format_for_display(phone_digits)
+                screen.ids.formatted_phone_label.text = f"{country_code} {formatted_phone}"
+            else:
+                screen.ids.formatted_phone_label.text = country_code
             
-            screen.ids.continue_button.disabled = not (has_country_code and has_phone_number)
+            has_valid_country = country_code.startswith('+') and len(country_digits) > 0
+            has_valid_phone = len(phone_digits) >= 5  
+            
+            screen.ids.continue_button.disabled = not (has_valid_country and has_valid_phone)
             
         except Exception as e:
             print(f"Error in update_phone_format: {e}")
@@ -92,11 +82,12 @@ class ArtikGram(App):
         elif len(digits) <= 8:
             return f"{digits[:3]} {digits[3:6]} {digits[6:]}"
         else:
-            return f"{digits[:3]} {digits[3:6]} {digits[6:8]} {digits[8:10]}"
+            return f"{digits[:3]} {digits[3:6]} {digits[6:8]} {digits[8:]}"
     
     def process_phone_number(self, country_code, phone_number):
-        country_digits = re.sub(r'\D', '', country_code)
-        phone_digits = re.sub(r'\D', '', phone_number)
+        country_digits = re.sub(r'[^\d]', '', country_code)
+        phone_digits = re.sub(r'[^\d]', '', phone_number)
+        
         if country_digits and phone_digits:
             full_phone = f"+{country_digits}{phone_digits}"
             print(f"Full phone number for TDLib: {full_phone}")
