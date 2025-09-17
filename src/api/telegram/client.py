@@ -1,4 +1,5 @@
 from tdlib import TDJsonClient
+from ....config import *
 
 class TelegramClient:
     def __init__(self, ):
@@ -10,8 +11,8 @@ class TelegramClient:
                    "database_directory": "tdlib_db",
                    "use_message_database": True,
                    "use_secret_chats": True,
-                   "api_id": 0,
-                   "api_hash": "",
+                   "api_id": TG_API_ID,
+                   "api_hash": TG_API_HASH,
                    "system_language_code": "en",
                    "device_model": "Desktop",
                    "system_version": "Linux",
