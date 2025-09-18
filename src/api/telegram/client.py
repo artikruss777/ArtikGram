@@ -1,18 +1,19 @@
-from tdlib import TDJsonClient
-from ....config import *
+from src.api.telegram.tdlib import TDJsonClient
 
 class TelegramClient:
-    def __init__(self, ):
-        self.td_client = TDJsonClient
+    def __init__(self, api_id, api_hash):
+        self.td_client = TDJsonClient()
         self.is_authorized = False
+        self.api_id = api_id
+        self.api_hash = api_hash
     
     def initialize(self):
         self._send({"@type": "setTdlibParameters", 
                    "database_directory": "tdlib_db",
                    "use_message_database": True,
                    "use_secret_chats": True,
-                   "api_id": TG_API_ID,
-                   "api_hash": TG_API_HASH,
+                   "api_id": self.api_id,
+                   "api_hash": self.api_hash,
                    "system_language_code": "en",
                    "device_model": "Desktop",
                    "system_version": "Linux",

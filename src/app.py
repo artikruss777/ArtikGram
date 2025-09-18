@@ -90,4 +90,5 @@ class ArtikGram(App):
         
         if country_digits and phone_digits:
             full_phone = f"+{country_digits}{phone_digits}"
+            return full_phone
             print(f"Full phone number for TDLib: {full_phone}")
