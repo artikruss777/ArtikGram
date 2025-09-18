@@ -126,7 +126,7 @@ except Exception as e:
 
 def td_send(query):
     if client:
-        client.send(query)
+        client._send(query)
     else:
         raise RuntimeError("TDLib client not initialized")
 

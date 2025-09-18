@@ -2,19 +2,48 @@ from kivy.app import App
 from kivy.uix.screenmanager import ScreenManager
 from kivy.properties import StringProperty, BooleanProperty
 import re
-from src.screens.welcome import *
-from src.screens.login1 import *
 from kivy.clock import Clock
 from kivy.lang import Builder
+from kivy.uix.label import Label
+
+from src.screens.welcome import WelcomeScreen
+from src.screens.login1 import LoginScreen1
 
 class ArtikGram(App):
+    telegram_client = None
+    
     def build(self):
         Builder.load_file('src/kv/my.kv')
         sm = ScreenManager()
         sm.add_widget(WelcomeScreen(name='welcome'))
         sm.add_widget(LoginScreen1(name='login1'))
         sm.current = 'welcome'
+        
+        Clock.schedule_once(self.initialize_telegram_client, 1.0)
+        
         return sm
+    
+    def initialize_telegram_client(self, dt):
+        try:
+            from src.api.telegram.client import TelegramClient
+            self.telegram_client = TelegramClient()
+            self.telegram_client.initialize()
+            
+            Clock.schedule_interval(self.process_telegram_updates, 0.1)
+            
+            print("Telegram client initialized!")
+            
+        except Exception as e:
+            error_msg = f"Failed to initialize Telegram client: {e}"
+            print("Error", error_msg)
+    
+    
+    def process_telegram_updates(self, dt):
+        if self.telegram_client:
+            try:
+                self.telegram_client.process_updates(0)
+            except Exception as e:
+                print(f"Error processing Telegram updates: {e}")
     
     def format_country_code(self, text_input):
         text = text_input.text
@@ -85,10 +114,23 @@ class ArtikGram(App):
             return f"{digits[:3]} {digits[3:6]} {digits[6:8]} {digits[8:]}"
     
     def process_phone_number(self, country_code, phone_number):
-        country_digits = re.sub(r'[^\d]', '', country_code)
-        phone_digits = re.sub(r'[^\d]', '', phone_number)
-        
-        if country_digits and phone_digits:
-            full_phone = f"+{country_digits}{phone_digits}"
-            return full_phone
-            print(f"Full phone number for TDLib: {full_phone}")
+        try:
+            if not self.telegram_client:
+                print("Error, Telegram client not initialized.")
+                return
+            
+            full_phone = self.telegram_client.phone_auth.set_phone_number(
+                country_code, phone_number
+            )
+            
+            self.telegram_client.phone_auth.send_phone_number()
+            
+            print(f"Phone number sent: {full_phone}")
+            
+        except Exception as e:
+            error_msg = f"Error processing phone number: {e}"
+            print("Error", error_msg)
+    
+    def on_stop(self):
+        if self.telegram_client:
+            self.telegram_client.close()
