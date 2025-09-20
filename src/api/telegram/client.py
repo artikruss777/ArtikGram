@@ -1,7 +1,7 @@
 from .tdlib import TDJsonClient
-from src.api.telegram.auth import PhoneAuth, CodeAuth
-from src.api.telegram.handlers import AuthHandler
-from src.utils.config_loader import load_config
+from .auth import PhoneAuth, CodeAuth
+from .handlers import AuthHandler
+from ...utils.config_loader import load_config
 
 class TelegramClient:
     def __init__(self, api_id=None, api_hash=None):
@@ -50,10 +50,7 @@ class TelegramClient:
         self.td_client.send(query)
     
     def receive(self, timeout=1.0):
-        update = self.td_client.receive(timeout)
-        if update:
-            self.auth_handler.handle_update(update)
-        return update
+        return self.td_client.receive(timeout)
     
     def process_updates(self, timeout=1.0):
         while True:

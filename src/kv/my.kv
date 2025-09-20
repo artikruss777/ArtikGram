@@ -1,7 +1,3 @@
-#:kivy 1.0
-#:import dp kivy.metrics.dp
-#:import sp kivy.metrics.sp
-
 <WelcomeScreen>:
     BoxLayout:
         padding: dp(40)
@@ -132,19 +128,114 @@
                 size_hint: (0.8, None)
                 height: dp(50)
                 pos_hint: {'center_x': 0.5}
-                background_color: 0, 0, 0, 0
+                background_color: (0.314, 0.0, 1, 1) if not self.disabled else (0.7, 0.7, 0.7, 1)
                 font_size: sp(16)
                 bold: True
                 disabled: True
+                on_press: 
+                    self.background_color = (0.2, 0.0, 0.8, 1)
+                    app.process_phone_number(country_code_input.text, phone_input.text)
+                on_release: 
+                    self.background_color = (0.314, 0.0, 1, 1) if not self.disabled else (0.7, 0.7, 0.7, 1)
                 canvas.before:
-                    Color:
-                        rgba: (0.314, 0.0, 1, 1) if not self.disabled else (0.7, 0.7, 0.7, 1)
                     RoundedRectangle:
                         size: self.size
                         pos: self.pos
                         radius: [dp(12),]
+        Widget:
+            size_hint_y: 0.1
+
+<LoginScreen2>:
+    BoxLayout:
+        orientation: 'vertical'
+        padding: dp(30)
+        spacing: dp(20)
+        Widget:
+            size_hint_y: 0.2
+        BoxLayout:
+            orientation: 'vertical'
+            size_hint_y: 0.5
+            spacing: dp(15)
+            padding: [dp(20), 0]
+            Label:
+                text: 'Enter verification code'
+                font_size: sp(20)
+                bold: True
+                size_hint_y: None
+                height: dp(30)
+                text_size: self.width, None
+                halign: 'center'
+            TextInput:
+                id: code_input
+                hint_text: '12345'
+                multiline: False
+                font_size: sp(18)
+                size_hint_x: 0.8
+                height: dp(50)
+                pos_hint: {'center_x': 0.5}
+                padding: [dp(15), dp(15)]
+                background_normal: ''
+                background_active: ''
+                cursor_color: 0.314, 0.0, 1, 1
+                foreground_color: 0, 0, 0, 1
+                input_filter: 'int' 
+                canvas.before:
+                    Color:
+                        rgba: (0.95, 0.95, 0.95, 1) if self.focus else (0.9, 0.9, 0.9, 1)
+                    RoundedRectangle:
+                        pos: self.pos
+                        size: self.size
+                        radius: [dp(10),]
+            Label:
+                text: 'Enter the code sent to your phone'
+                font_size: sp(12)
+                color: 0.6, 0.6, 0.6, 1
+                size_hint_y: None
+                height: dp(20)
+                text_size: self.width, None
+                halign: 'center'
+        BoxLayout:
+            orientation: 'vertical'
+            size_hint_y: 0.2
+            padding: [dp(40), 0]
+            spacing: dp(10)
+            Button:
+                id: verify_button
+                text: 'Verify Code'   
+                size_hint: (0.8, None)
+                height: dp(50)
+                pos_hint: {'center_x': 0.5}
+                background_color: (0.314, 0.0, 1, 1)
+                font_size: sp(16)
+                bold: True
                 on_press: 
-                    app.process_phone_number(country_code_input.text, phone_input.text)
+                    self.background_color = (0.2, 0.0, 0.8, 1)
+                    app.process_verification_code(code_input.text)
+                on_release: 
+                    self.background_color = (0.314, 0.0, 1, 1)
+                canvas.before:
+                    RoundedRectangle:
+                        size: self.size
+                        pos: self.pos
+                        radius: [dp(12),]
+            Button:
+                id: resend_button
+                text: 'Resend Code'   
+                size_hint: (0.6, None)
+                height: dp(40)
+                pos_hint: {'center_x': 0.5}
+                background_color: (0.6, 0.6, 0.6, 1)
+                font_size: sp(14)
+                on_press: 
+                    self.background_color = (0.4, 0.4, 0.4, 1)
+                    app.resend_code()
+                on_release: 
+                    self.background_color = (0.6, 0.6, 0.6, 1)
+                canvas.before:
+                    RoundedRectangle:
+                        size: self.size
+                        pos: self.pos
+                        radius: [dp(10),]
         Widget:
             size_hint_y: 0.1
 
@@ -153,3 +244,5 @@ ScreenManager:
         name: 'welcome'
     LoginScreen1:
         name: 'login1'
+    LoginScreen2:
+        name: 'login2'

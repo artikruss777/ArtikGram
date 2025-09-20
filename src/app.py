@@ -4,19 +4,23 @@ from kivy.properties import StringProperty, BooleanProperty
 import re
 from kivy.clock import Clock
 from kivy.lang import Builder
+from kivy.uix.popup import Popup
 from kivy.uix.label import Label
 
 from src.screens.welcome import WelcomeScreen
 from src.screens.login1 import LoginScreen1
+from src.screens.login2 import LoginScreen2
 
 class ArtikGram(App):
     telegram_client = None
+    current_phone_number = ""
     
     def build(self):
         Builder.load_file('src/kv/my.kv')
         sm = ScreenManager()
         sm.add_widget(WelcomeScreen(name='welcome'))
         sm.add_widget(LoginScreen1(name='login1'))
+        sm.add_widget(LoginScreen2(name='login2'))
         sm.current = 'welcome'
         
         Clock.schedule_once(self.initialize_telegram_client, 1.0)
@@ -31,19 +35,40 @@ class ArtikGram(App):
             
             Clock.schedule_interval(self.process_telegram_updates, 0.1)
             
-            print("Telegram client initialized!")
-            
         except Exception as e:
             error_msg = f"Failed to initialize Telegram client: {e}"
             print("Error", error_msg)
-    
+
     
     def process_telegram_updates(self, dt):
         if self.telegram_client:
             try:
-                self.telegram_client.process_updates(0)
+                update = self.telegram_client.receive(0)
+                if update and update.get('@type') == 'updateAuthorizationState':
+                    auth_state = update.get('authorization_state', {})
+                    self.handle_auth_state(auth_state)
             except Exception as e:
                 print(f"Error processing Telegram updates: {e}")
+    
+    def handle_auth_state(self, auth_state):
+        state_type = auth_state.get('@type')
+        
+        if state_type == 'authorizationStateWaitCode':
+            code_info = auth_state.get('code_info', {})
+            code_type = code_info.get('type', {}).get('@type', '')
+            
+            if code_type == 'authenticationCodeTypeSms':
+                print("SMS code sent to your phone")
+            elif code_type == 'authenticationCodeTypeTelegramMessage':
+                print("Code sent via Telegram message")
+            
+            self.root.current = 'login2'
+            
+        elif state_type == 'authorizationStateReady':
+            print("Authorization completed!")
+            
+        elif state_type == 'authorizationStateWaitPassword':
+            print("2FA password required")
     
     def format_country_code(self, text_input):
         text = text_input.text
@@ -116,19 +141,44 @@ class ArtikGram(App):
     def process_phone_number(self, country_code, phone_number):
         try:
             if not self.telegram_client:
-                print("Error, Telegram client not initialized.")
+                print("Error", "Telegram client not initialized.")
                 return
             
             full_phone = self.telegram_client.phone_auth.set_phone_number(
                 country_code, phone_number
             )
+            self.current_phone_number = full_phone
             
             self.telegram_client.phone_auth.send_phone_number()
             
-            print(f"Phone number sent: {full_phone}")
-            
         except Exception as e:
             error_msg = f"Error processing phone number: {e}"
+            print("Error", error_msg)
+    
+    def process_verification_code(self, code):
+        try:
+            if not self.telegram_client:
+                print("Error", "Telegram client not initialized.")
+                return
+            
+            self.telegram_client.code_auth.send_code(code)
+            
+        except Exception as e:
+            error_msg = f"Error processing verification code: {e}"
+            print("Error", error_msg)
+    
+    def resend_code(self):
+        try:
+            if not self.telegram_client:
+                print("Error", "Telegram client not initialized.")
+                return
+            
+            query = {"@type": "resendAuthenticationCode"}
+            self.telegram_client._send(query)
+            print("Code resent successfully")
+            
+        except Exception as e:
+            error_msg = f"Error resending code: {e}"
             print("Error", error_msg)
     
     def on_stop(self):
