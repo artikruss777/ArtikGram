@@ -46,6 +46,116 @@ Hi! I'm **Artem** (`@artikruss777`). I'm 12 years old and I'm passionate about p
 *   **My GitHub journey has just begun.** My repository might be a bit messy as I'm still learning best practices for commits, branches, and documentation. Thank you for your understanding!
 *   **I welcome all help!** If you have suggestions on code, architecture, or how to use Git better, please let me know.
 
+### 🚀 Running
+
+Here's guide how to run ArtikGram
+
+  ### Windows
+  Install [python](https://www.python.org/downloads/windows/), [git](https://git-scm.com/downloads/win), [Microsoft Visual Studio C++](https://visualstudio.microsoft.com/ru/vs/community/) (Enable C++ support while installing), [CMake](https://cmake.org/download/) (choose "Add CMake to the system PATH" option while installing), [PHP](https://windows.php.net/download) (Add the path to php.exe to the PATH environment variable) and [build tdlib for windows](https://tdlib.github.io/td/build.html)
+
+  You can use this command and instrutions or generate your own (recomended)
+  
+  Write this in powershell after installing required software
+  ```
+  git clone https://github.com/tdlib/td.git
+cd td
+git clone https://github.com/Microsoft/vcpkg.git
+cd vcpkg
+git checkout bc3512a509f9d29b37346a7e7e929f9a26e66c7e
+./bootstrap-vcpkg.bat
+./vcpkg.exe install gperf:x64-windows openssl:x64-windows zlib:x64-windows
+cd ..
+Remove-Item build -Force -Recurse -ErrorAction SilentlyContinue
+mkdir build
+cd build
+cmake -A x64 -DCMAKE_INSTALL_PREFIX:PATH=../tdlib -DCMAKE_TOOLCHAIN_FILE:FILEPATH=../vcpkg/scripts/buildsystems/vcpkg.cmake ..
+cmake --build . --target install --config Release
+cd ..
+cd ..
+dir td/tdlib
+  ```
+Then clone artikgram repository:
+```
+git clone https://github.com/artkruss777/ArtikGram
+```
+go to ArtikGram folder:
+
+```
+cd ArtikGram
+```
+Then activate venv (optional) and install requirements
+```
+python -m venv .venv
+.venv/Scripts/activate
+pip install -r requirments.txt
+```
+And finnaly run ArtikGram!
+```
+python main.py
+```
+
+  ### Linux
+  First, install the required dependencies for your distribution.
+
+  **Ubuntu/Debian**
+  ```
+  sudo apt update
+sudo apt install git cmake g++ build-essential zlib1g-dev libssl-dev php curl python3 python3-pip python3-venv
+  ```
+
+  **Fedora**
+  ```
+  sudo dnf install git cmake gcc-c++ make zlib-devel openssl-devel php curl python3 python3-pip
+  ```
+
+  **Arch Linux**
+  ```
+  sudo pacman -S git cmake gcc zlib openssl php curl python python-pip
+  ```
+
+  **OpenSUSE**
+  ```
+  sudo zypper install git cmake gcc-c++ zlib-devel libopenssl-devel php curl python3 python3-pip
+  ```
+
+  Now build tdlib:
+
+  You can use this command and instrutions or [generate your own](https://tdlib.github.io/td/build.html) (recomended)
+
+  ```
+    git clone https://github.com/tdlib/td.git
+    cd td
+    rm -rf build
+    mkdir build
+    cd build
+    cmake -DCMAKE_BUILD_TYPE=Release -DCMAKE_INSTALL_PREFIX:PATH=../tdlib ..
+    cmake --build . --target install
+    cd ..
+    cd ..
+    ls -l td/tdlib
+  ```
+  Then clone artikgram repository:
+```
+git clone https://github.com/artkruss777/ArtikGram
+```
+go to ArtikGram folder:
+
+```
+cd ArtikGram
+```
+Then activate venv (optional) and install requirements
+```
+python -m venv .venv
+source .venv/bin/activate
+pip install -r requirments.txt
+```
+And finnaly run ArtikGram!
+```
+python main.py
+```
+
+
+
 ### 📬 Contact Me
 
 Have a question, want to follow progress, or just say hi?
