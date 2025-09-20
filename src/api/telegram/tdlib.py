@@ -4,42 +4,135 @@ import json
 import sys
 import os
 import platform
+from pathlib import Path
 
-def find_tdjson_system():
-    possible_paths = [
-        '/usr/local/lib/libtdjson.so',
-        '/usr/lib/libtdjson.so',
-        '/usr/lib/x86_64-linux-gnu/libtdjson.so',
-        '/usr/lib/aarch64-linux-gnu/libtdjson.so',
-        '/usr/lib/arm-linux-gnueabihf/libtdjson.so',
-        '/opt/td/lib/libtdjson.so',
-        os.path.expanduser('~/td/build/libtdjson.so'),
-        os.path.expanduser('~/td/lib/libtdjson.so'),
-        os.path.expanduser('~/libtdjson.so'),
+sys.path.insert(0, str(Path(__file__).parent.parent.parent))
+
+from utils.config_loader import get_tdjson_path
+
+def find_tdjson():
+    config_path = get_tdjson_path()
+    if config_path:
+        print(f"Using TDLib path from config: {config_path}")
+        return config_path
+
+    system = platform.system().lower()
+    machine = platform.machine().lower()
+    
+    lib_extensions = {
+        'windows': '.dll',
+        'darwin': '.dylib',
+        'linux': '.so'
+    }
+    lib_extension = lib_extensions.get(system, '.so')
+    
+    arch_map = {
+        'x86_64': 'x86_64',
+        'amd64': 'x86_64',
+        'i386': 'x86',
+        'i686': 'x86',
+        'arm64': 'arm64',
+        'aarch64': 'arm64',
+        'armv7l': 'arm',
+        'armv6l': 'arm'
+    }
+    architecture = arch_map.get(machine, machine)
+    
+    project_root = Path(__file__).parent.parent.parent
+    possible_paths = []
+    
+    tdlib_paths = [
+        project_root / 'tdlib',
+        project_root / 'td' / 'lib',
+        project_root / 'libtdjson',
+        project_root / 'libs' / 'tdlib',
+        project_root / 'vendor' / 'tdlib',
+        project_root / 'src' / 'api' / 'telegram' / 'tdlib',
     ]
     
-    for path in possible_paths:
-        if os.path.exists(path):
-            return path
+    for base_path in tdlib_paths:
+        if not base_path.exists():
+            continue
+            
+        if system == 'windows':
+            possible_paths.extend([
+                base_path / f'tdjson{lib_extension}',
+                base_path / 'bin' / f'tdjson{lib_extension}',
+                base_path / architecture / f'tdjson{lib_extension}',
+                base_path / 'bin' / architecture / f'tdjson{lib_extension}',
+            ])
+        
+        else:
+            possible_paths.extend([
+                base_path / f'libtdjson{lib_extension}',
+                base_path / f'libtdjson{lib_extension}.1',
+                base_path / f'libtdjson{lib_extension}.1.8.0',
+                base_path / 'build' / f'libtdjson{lib_extension}',
+                base_path / 'build' / architecture / f'libtdjson{lib_extension}',
+            ])
     
-    lib_path = find_library("tdjson")
+    system_paths = [
+        f'/usr/local/build/libtdjson{lib_extension}',
+        f'/usr/build/libtdjson{lib_extension}',
+        f'/usr/build/{architecture}-linux-gnu/libtdjson{lib_extension}',
+        f'/opt/td/build/libtdjson{lib_extension}',
+        os.path.expanduser(f'~/td/build/libtdjson{lib_extension}'),
+    ]
+    
+    possible_paths.extend([Path(p) for p in system_paths])
+    
+    for path in possible_paths:
+        if path.exists():
+            print(f"Found TDLib at: {path}")
+            return str(path)
+    
+    lib_name = "tdjson" if system == "windows" else "tdjson"
+    lib_path = find_library(lib_name)
     if lib_path:
+        print(f"Found TDLib via system: {lib_path}")
         return lib_path
     
-    return 'libtdjson.so'
+    default_names = {
+        'windows': 'tdjson.dll',
+        'darwin': 'libtdjson.dylib',
+        'linux': 'libtdjson.so'
+    }
+    
+    return default_names.get(system, 'libtdjson.so')
 
-tdjson_path = find_tdjson_system()
+def load_tdjson():
+    tdjson_path = find_tdjson()
+    
+    if not tdjson_path:
+        raise RuntimeError(
+            "TDLib is not found. Please:\n"
+            "1. Download TDLib from https://github.com/tdlib/td\n"
+            "2. Build it or download prebuilt binaries\n"
+            "3. Place the library in project_root/tdlib/ directory\n"
+            "4. Or set TDJSON_PATH in config.py/config.json/.env\n"
+            f"Expected library name: {get_expected_lib_name()}"
+        )
+    
+    try:
+        if platform.system().lower() == 'windows' and os.path.dirname(tdjson_path):
+            os.environ['PATH'] = os.path.dirname(tdjson_path) + os.pathsep + os.environ['PATH']
+        
+        tdjson = CDLL(tdjson_path)
+        print(f"Successfully loaded TDLib from: {tdjson_path}")
+        return tdjson
+    except Exception as e:
+        raise RuntimeError(f"Failed to load TDLib library '{tdjson_path}': {str(e)}")
 
-if tdjson_path is None:
-    raise RuntimeError(
-        "TDLib is not found on the system. "
-        "Please, follow instructions at https://github.com/tdlib/td to build it."
-    )
+def get_expected_lib_name():
+    system = platform.system().lower()
+    lib_names = {
+        'windows': 'tdjson.dll',
+        'darwin': 'libtdjson.dylib',
+        'linux': 'libtdjson.so'
+    }
+    return lib_names.get(system, 'libtdjson.so')
 
-try:
-    tdjson = CDLL(tdjson_path)
-except Exception as e:
-    raise RuntimeError(f"Failed to load TDLib library '{tdjson_path}': {str(e)}")
+tdjson = load_tdjson()
 
 td_json_client_create = tdjson.td_json_client_create
 td_json_client_create.restype = c_void_p
@@ -126,7 +219,7 @@ except Exception as e:
 
 def td_send(query):
     if client:
-        client._send(query)
+        client.send(query)
     else:
         raise RuntimeError("TDLib client not initialized")
 
@@ -150,8 +243,8 @@ def set_log_verbosity_level(level):
     td_set_log_verbosity_level(level)
 
 if __name__ == "__main__":
-    print(f"TDLib library loaded from: {tdjson_path}")
     print(f"Platform: {platform.system()} {platform.machine()}")
+    print(f"Expected library name: {get_expected_lib_name()}")
     
     result = td_execute({"@type": "getOption", "name": "version"})
     if result:

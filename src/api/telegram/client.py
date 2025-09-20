@@ -35,7 +35,7 @@ class TelegramClient:
             "database_directory": "tdlib_db",
             "use_message_database": True,
             "use_secret_chats": True,
-            "api_id": self.api_id,
+            "api_id": int(self.api_id),
             "api_hash": self.api_hash,
             "system_language_code": "en",
             "device_model": "Desktop",
