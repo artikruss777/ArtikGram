@@ -154,7 +154,102 @@ And finnaly run ArtikGram!
 python main.py
 ```
 
+  ### Android (May not work, beta version, not tested yet)
 
+  [Download Termux](https://termux.dev/en/) on your phone.
+
+  Give storage permission.
+
+  ```
+  termux-setup-storage
+  ``` 
+
+  Open termux.
+
+  Install dependencies:
+  ```
+
+pkg update && pkg upgrade -y
+pkg install python git cmake make clang openssl zlib libcrypt php
+  ```
+
+  Build tdlib.
+
+  You can use this command and instrutions or [generate your own](https://tdlib.github.io/td/build.html) (recomended)
+
+  ```
+  git clone https://github.com/tdlib/td.git
+cd td
+rm -rf build
+mkdir build
+cd build
+cmake -DCMAKE_BUILD_TYPE=Release -DCMAKE_INSTALL_PREFIX:PATH=../tdlib ..
+cmake --build . --target install
+cd ..
+cd ..
+ls -l td/tdlib
+  ```
+
+    Then clone artikgram repository:
+```
+git clone https://github.com/artkruss777/ArtikGram
+```
+go to ArtikGram folder:
+
+```
+cd ArtikGram
+```
+Then activate venv (optional) and install requirements
+```
+python -m venv .venv
+source .venv/bin/activate
+pip install -r requirments.txt
+```
+And finnaly run ArtikGram!
+```
+python main.py
+```
+Create a configuration file for Kivy:
+
+```
+# Create .kivy directory if it doesn't exist
+mkdir -p ~/.kivy
+
+# Create config file
+cat > ~/.kivy/config.ini << EOF
+[graphics]
+display = -1
+width = auto
+height = auto
+maxfps = 60
+multisamples = 2
+show_cursor = 1
+window_icon = 
+resizable = 1
+borderless = 0
+fullscreen = auto
+rotation = 0
+position = auto
+top = 0
+left = 0
+EOF
+```
+Troubleshooting
+If you get "Cannot open display" error:
+bash
+```
+# Install X11 support (if available)
+pkg install x11-repo -y
+pkg install tigervnc -y
+
+# Or use Termux:X11 from F-Droid for better GUI support
+```
+If Kivy has rendering issues:
+bash
+```
+# Try different Kivy backend
+export KIVY_GL_BACKEND=sdl2
+```
 
 ### 📬 Contact Me
 
