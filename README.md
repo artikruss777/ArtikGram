@@ -50,6 +50,16 @@ Hi! I'm **Artem** (`@artikruss777`). I'm 12 years old and I'm passionate about p
 
 Here's guide how to run ArtikGram
 
+First, [get your own API credentials](my.telegram.org):
+
+1. Log in to your Telegram account
+
+2. Click on [API development tools](https://my.telegram.org/apps)
+
+3. Create your app
+
+4. Copy your API ID and API Hash
+
   ### Windows
   Install [python](https://www.python.org/downloads/windows/), [git](https://git-scm.com/downloads/win), [Microsoft Visual Studio C++](https://visualstudio.microsoft.com/ru/vs/community/) (Enable C++ support while installing), [CMake](https://cmake.org/download/) (choose "Add CMake to the system PATH" option while installing), [PHP](https://windows.php.net/download) (Add the path to php.exe to the PATH environment variable) and [build tdlib for windows](https://tdlib.github.io/td/build.html)
 
@@ -89,6 +99,14 @@ python -m venv .venv
 .venv/Scripts/activate
 pip install -r requirments.txt
 ```
+
+Create .env file (or edit config.py)
+
+```
+TG_API_ID= #Your API ID here
+TG_API_HASH= #Your API HASH here
+```
+
 And finnaly run ArtikGram!
 ```
 python main.py
@@ -149,6 +167,23 @@ python -m venv .venv
 source .venv/bin/activate
 pip install -r requirments.txt
 ```
+
+Now create .env file.
+
+```
+touch .env
+```
+
+And edit it
+```
+nano .env
+```
+It should look like this
+```
+TG_API_ID= #Your API ID here
+TG_API_HASH= #Your API HASH here
+```
+
 And finnaly run ArtikGram!
 ```
 python main.py
@@ -204,6 +239,21 @@ Then activate venv (optional) and install requirements
 python -m venv .venv
 source .venv/bin/activate
 pip install -r requirments.txt
+```
+Now create .env file.
+
+```
+touch .env
+```
+
+And edit it
+```
+nano .env
+```
+It should look like this
+```
+TG_API_ID= #Your API ID here
+TG_API_HASH= #Your API HASH here
 ```
 And finnaly run ArtikGram!
 ```
