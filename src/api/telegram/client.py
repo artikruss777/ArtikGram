@@ -73,3 +73,11 @@ class TelegramClient:
     
     def __exit__(self, exc_type, exc_val, exc_tb):
         self.close()
+    
+    def _on_auth_state_change(self, state_type, auth_state):
+        if state_type == 'authorizationStateReady':
+            self.is_authorized = True
+            print("User successfully authorized")
+        elif state_type == 'authorizationStateClosed':
+            self.is_authorized = False
+            print("User authorization ended")

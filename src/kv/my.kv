@@ -327,6 +327,20 @@
         Widget:
             size_hint_y: 0.1
 
+<HomeScreen>:
+    BoxLayout:
+        orientation: 'vertical'
+        padding: dp(30)
+        spacing: dp(20)
+        
+        Label:
+            text: 'ArtikGram - Home'
+            font_size: sp(24)
+            bold: True
+            size_hint_y: 0.2
+            text_size: self.width, None
+            halign: 'center'
+
 ScreenManager:
     WelcomeScreen:
         name: 'welcome'
@@ -336,3 +350,5 @@ ScreenManager:
         name: 'login2'
     LoginScreen3:
         name: 'login3'
+    HomeScreen:
+        name: 'homescreen'

@@ -11,6 +11,8 @@ from src.screens.welcome import WelcomeScreen
 from src.screens.login1 import LoginScreen1
 from src.screens.login2 import LoginScreen2
 from src.screens.login3 import LoginScreen3
+from src.screens.homescreen import HomeScreen
+from src.utils.settings import settings_manager
 
 class ArtikGram(App):
     telegram_client = None
@@ -23,8 +25,14 @@ class ArtikGram(App):
         sm.add_widget(LoginScreen1(name='login1'))
         sm.add_widget(LoginScreen2(name='login2'))
         sm.add_widget(LoginScreen3(name='login3'))
-        sm.current = 'welcome'
-        
+        sm.add_widget(HomeScreen(name='homescreen'))
+
+        if settings_manager.is_user_authorized():
+            sm.current = 'homescreen'
+            print("User is already authorized, going to home screen")
+        else:
+            sm.current = 'welcome'
+            print("User not authorized, showing welcome screen")
         Clock.schedule_once(self.initialize_telegram_client, 1.0)
         
         return sm
@@ -34,12 +42,22 @@ class ArtikGram(App):
             from src.api.telegram.client import TelegramClient
             self.telegram_client = TelegramClient()
             self.telegram_client.initialize()
+            if settings_manager.is_user_authorized():
+                self._check_current_auth_state()
             
             Clock.schedule_interval(self.process_telegram_updates, 0.1)
             
         except Exception as e:
             error_msg = f"Failed to initialize Telegram client: {e}"
             print("Error", error_msg)
+    
+    def _check_current_auth_state(self):
+        if self.telegram_client:
+            try:
+                self.telegram_client._send({"@type": "getAuthorizationState"})
+            except Exception as e:
+                print(f"Error checking auth state: {e}")
+    
 
     
     def process_telegram_updates(self, dt):
@@ -68,6 +86,10 @@ class ArtikGram(App):
             
         elif state_type == 'authorizationStateReady':
             print("Authorization completed!")
+            settings_manager.set_authorized(
+                phone_number=self.current_phone_number
+            )
+            self.root.current = 'homescreen'
             
         elif state_type == 'authorizationStateWaitPassword':
             print("2FA password required")
@@ -86,6 +108,11 @@ class ArtikGram(App):
         
         elif state_type == 'authorizationStateWaitPhoneNumber':
             self.root.current = 'login1'
+
+            if settings_manager.is_user_authorized():
+                settings_manager.set_unauthorized()
+                print("Previous authorization was lost")
+            
         
         elif state_type == 'authorizationStateWaitRegistration':
             print("Account registration required")
@@ -95,9 +122,11 @@ class ArtikGram(App):
         
         elif state_type == 'authorizationStateClosing':
             print("Authorization is closing")
-        
+
         elif state_type == 'authorizationStateClosed':
             print("Authorization closed")
+
+            settings_manager.set_unauthorized()
     
     def format_country_code(self, text_input):
         text = text_input.text
@@ -225,3 +254,17 @@ class ArtikGram(App):
     def on_stop(self):
         if self.telegram_client:
             self.telegram_client.close()
+    
+    def logout(self):
+        if self.telegram_client:
+            try:
+                self.telegram_client._send({"@type": "logOut"})
+            except Exception as e:
+                print(f"Error during logout: {e}")
+        
+        settings_manager.set_unauthorized()
+        
+        if self.root:
+            self.root.current = 'welcome'
+        
+        print("Logged out successfully")
