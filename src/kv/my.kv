@@ -154,7 +154,7 @@
             size_hint_y: 0.2
         BoxLayout:
             orientation: 'vertical'
-            size_hint_y: 0.5
+            size_hint_y: 0.3
             spacing: dp(15)
             padding: [dp(20), 0]
             Label:
@@ -169,11 +169,11 @@
                 id: code_input
                 hint_text: '12345'
                 multiline: False
-                font_size: sp(18)
+                font_size: sp(16)
                 size_hint_x: 0.8
-                height: dp(50)
+                height: dp(20)
                 pos_hint: {'center_x': 0.5}
-                padding: [dp(15), dp(15)]
+                padding: [dp(10), dp(8)]
                 background_normal: ''
                 background_active: ''
                 cursor_color: 0.314, 0.0, 1, 1
@@ -185,7 +185,7 @@
                     RoundedRectangle:
                         pos: self.pos
                         size: self.size
-                        radius: [dp(10),]
+                        radius: [dp(8),]
             Label:
                 text: 'Enter the code sent to your phone'
                 font_size: sp(12)
@@ -239,6 +239,94 @@
         Widget:
             size_hint_y: 0.1
 
+<LoginScreen3>:
+    password_hint: ""
+    
+    BoxLayout:
+        orientation: 'vertical'
+        padding: dp(30)
+        spacing: dp(20)
+        Widget:
+            size_hint_y: 0.1
+        BoxLayout:
+            orientation: 'vertical'
+            size_hint_y: 0.4
+            spacing: dp(15)
+            padding: [dp(20), 0]
+            Label:
+                text: 'Two-Step Verification'
+                font_size: sp(20)
+                bold: True
+                size_hint_y: None
+                height: dp(30)
+                text_size: self.width, None
+                halign: 'center'
+            Label:
+                id: hint_label
+                text: 'Enter your password' if not root.password_hint else f'Password hint: {root.password_hint}'
+                font_size: sp(14)
+                color: 0.4, 0.4, 0.4, 1
+                size_hint_y: None
+                height: dp(40)
+                text_size: self.width, None
+                halign: 'center'
+                text_size: self.width, None
+            TextInput:
+                id: password_input
+                hint_text: 'Password'
+                multiline: False
+                font_size: sp(16)
+                size_hint_x: 0.8
+                height: dp(50)
+                pos_hint: {'center_x': 0.5}
+                padding: [dp(15), dp(15)]
+                password: True  # Скрываем ввод пароля
+                background_normal: ''
+                background_active: ''
+                cursor_color: 0.314, 0.0, 1, 1
+                foreground_color: 0, 0, 0, 1
+                canvas.before:
+                    Color:
+                        rgba: (0.95, 0.95, 0.95, 1) if self.focus else (0.9, 0.9, 0.9, 1)
+                    RoundedRectangle:
+                        pos: self.pos
+                        size: self.size
+                        radius: [dp(10),]
+            Label:
+                text: 'This account is protected with two-step verification'
+                font_size: sp(12)
+                color: 0.6, 0.6, 0.6, 1
+                size_hint_y: None
+                height: dp(20)
+                text_size: self.width, None
+                halign: 'center'
+        BoxLayout:
+            orientation: 'vertical'
+            size_hint_y: 0.2
+            padding: [dp(40), 0]
+            spacing: dp(10)
+            Button:
+                id: verify_button
+                text: 'Verify Password'   
+                size_hint: (0.8, None)
+                height: dp(50)
+                pos_hint: {'center_x': 0.5}
+                background_color: (0.314, 0.0, 1, 1)
+                font_size: sp(16)
+                bold: True
+                on_press: 
+                    self.background_color = (0.2, 0.0, 0.8, 1)
+                    root.on_verify_pressed()
+                on_release: 
+                    self.background_color = (0.314, 0.0, 1, 1)
+                canvas.before:
+                    RoundedRectangle:
+                        size: self.size
+                        pos: self.pos
+                        radius: [dp(12),]
+        Widget:
+            size_hint_y: 0.1
+
 ScreenManager:
     WelcomeScreen:
         name: 'welcome'
@@ -246,3 +334,5 @@ ScreenManager:
         name: 'login1'
     LoginScreen2:
         name: 'login2'
+    LoginScreen3:
+        name: 'login3'

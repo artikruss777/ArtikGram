@@ -1,5 +1,5 @@
 from .tdlib import TDJsonClient
-from .auth import PhoneAuth, CodeAuth
+from .auth import PhoneAuth, CodeAuth, PasswordAuth
 from .handlers import AuthHandler
 from ...utils.config_loader import load_config
 
@@ -8,6 +8,7 @@ class TelegramClient:
         self.td_client = TDJsonClient()
         self.phone_auth = PhoneAuth(self)
         self.code_auth = CodeAuth(self)
+        self.password_auth = PasswordAuth(self)
         self.auth_handler = AuthHandler(self)
         self.is_authorized = False
         

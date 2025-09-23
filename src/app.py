@@ -10,6 +10,7 @@ from kivy.uix.label import Label
 from src.screens.welcome import WelcomeScreen
 from src.screens.login1 import LoginScreen1
 from src.screens.login2 import LoginScreen2
+from src.screens.login3 import LoginScreen3
 
 class ArtikGram(App):
     telegram_client = None
@@ -21,6 +22,7 @@ class ArtikGram(App):
         sm.add_widget(WelcomeScreen(name='welcome'))
         sm.add_widget(LoginScreen1(name='login1'))
         sm.add_widget(LoginScreen2(name='login2'))
+        sm.add_widget(LoginScreen3(name='login3'))
         sm.current = 'welcome'
         
         Clock.schedule_once(self.initialize_telegram_client, 1.0)
@@ -69,6 +71,33 @@ class ArtikGram(App):
             
         elif state_type == 'authorizationStateWaitPassword':
             print("2FA password required")
+            password_hint = auth_state.get('password_hint', '')
+            print(f"Password hint: {password_hint}")
+            
+            if self.root and hasattr(self.root, 'get_screen'):
+                try:
+                    screen = self.root.get_screen('login3')
+                    if screen and hasattr(screen, 'set_password_hint'):
+                        screen.set_password_hint(password_hint)
+                except:
+                    pass
+            
+            self.root.current = 'login3'
+        
+        elif state_type == 'authorizationStateWaitPhoneNumber':
+            self.root.current = 'login1'
+        
+        elif state_type == 'authorizationStateWaitRegistration':
+            print("Account registration required")
+        
+        elif state_type == 'authorizationStateWaitTdlibParameters':
+            print("Waiting for TDLib parameters")
+        
+        elif state_type == 'authorizationStateClosing':
+            print("Authorization is closing")
+        
+        elif state_type == 'authorizationStateClosed':
+            print("Authorization closed")
     
     def format_country_code(self, text_input):
         text = text_input.text
@@ -137,6 +166,18 @@ class ArtikGram(App):
             return f"{digits[:3]} {digits[3:6]} {digits[6:]}"
         else:
             return f"{digits[:3]} {digits[3:6]} {digits[6:8]} {digits[8:]}"
+    
+    def process_password(self, password):
+        try:
+            if not self.telegram_client:
+                print("Error", "Telegram client not initialized.")
+                return
+            
+            self.telegram_client.password_auth.send_password(password)
+            
+        except Exception as e:
+            error_msg = f"Error processing password: {e}"
+            print("Error", error_msg)
     
     def process_phone_number(self, country_code, phone_number):
         try:
