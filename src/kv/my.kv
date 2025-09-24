@@ -327,20 +327,116 @@
         Widget:
             size_hint_y: 0.1
 
+<ChatItem>:
+    canvas.before:
+        Color:
+            rgba: (0.9, 0.9, 0.9, 1)
+        Rectangle:
+            pos: self.pos
+            size: self.size
+        Color:
+            rgba: (0.7, 0.7, 0.7, 1)
+        Line:
+            rectangle: self.x, self.y, self.width, self.height
+            width: 1
+
+    # Аватар (простая заглушка)
+    Label:
+        text: root.title[0].upper() if root.title else '?'
+        size_hint_x: None
+        width: 50
+        color: (0, 0, 0, 1)
+        font_size: '20sp'
+        bold: True
+        canvas.before:
+            Color:
+                rgba: (0.8, 0.8, 1, 1)
+            Ellipse:
+                pos: self.pos
+                size: self.size
+
+    BoxLayout:
+        orientation: 'vertical'
+        padding: [10, 5]
+        spacing: 2
+        
+        Label:
+            text: root.title
+            size_hint_y: 0.6
+            color: (0, 0, 0, 1)
+            font_size: '16sp'
+            bold: True
+            text_size: self.width, None
+            halign: 'left'
+            valign: 'middle'
+        
+        Label:
+            text: root.preview
+            size_hint_y: 0.4
+            color: (0.3, 0.3, 0.3, 1)
+            font_size: '12sp'
+            text_size: self.width, None
+            halign: 'left'
+            valign: 'middle'
+
 <HomeScreen>:
     BoxLayout:
         orientation: 'vertical'
-        padding: dp(30)
-        spacing: dp(20)
+        padding: 0
+        spacing: 0
         
-        Label:
-            text: 'ArtikGram - Home'
-            font_size: sp(24)
-            bold: True
-            size_hint_y: 0.2
-            text_size: self.width, None
-            halign: 'center'
-
+        # Шапка
+        BoxLayout:
+            size_hint_y: None
+            height: 60
+            padding: [10, 5]
+            spacing: 10
+            canvas.before:
+                Color:
+                    rgba: (0.314, 0.0, 1, 1)
+                Rectangle:
+                    pos: self.pos
+                    size: self.size
+            
+            Label:
+                text: 'ArtikGram - Chats'
+                color: (1, 1, 1, 1) 
+                font_size: '20sp'
+                bold: True
+                text_size: self.width, None
+                halign: 'left'
+                valign: 'middle'
+            
+            Button:
+                text: 'Logout'
+                size_hint_x: None
+                width: 100
+                background_color: (0, 0, 0, 0)
+                color: (1, 1, 1, 1)
+                on_press: root.logout()
+                canvas.before:
+                    Color:
+                        rgba: (0.8, 0.2, 0.2, 0.8)
+                    RoundedRectangle:
+                        pos: self.pos
+                        size: self.size
+                        radius: [5,]
+        
+        # Список чатов
+        ScrollView:
+            id: chat_scroll_view
+            do_scroll_x: False
+            do_scroll_y: True
+            scroll_type: ['bars', 'content']
+            bar_width: 10
+            
+            BoxLayout:
+                id: chat_list_layout
+                orientation: 'vertical'
+                size_hint_y: None
+                height: self.minimum_height
+                spacing: 2
+                padding: [0, 0, 10, 0]
 ScreenManager:
     WelcomeScreen:
         name: 'welcome'

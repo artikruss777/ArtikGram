@@ -14,10 +14,11 @@ from src.screens.login3 import LoginScreen3
 from src.screens.homescreen import HomeScreen
 from src.utils.settings import settings_manager
 
+
 class ArtikGram(App):
     telegram_client = None
     current_phone_number = ""
-    
+        
     def build(self):
         Builder.load_file('src/kv/my.kv')
         sm = ScreenManager()
@@ -27,16 +28,22 @@ class ArtikGram(App):
         sm.add_widget(LoginScreen3(name='login3'))
         sm.add_widget(HomeScreen(name='homescreen'))
 
+        def on_current_change(instance, value):
+            instance.current_screen = instance.get_screen(value)
+        
+        sm.bind(current=on_current_change)
+        sm.current_screen = sm.get_screen(sm.current)
+
         if settings_manager.is_user_authorized():
             sm.current = 'homescreen'
             print("User is already authorized, going to home screen")
         else:
             sm.current = 'welcome'
             print("User not authorized, showing welcome screen")
+        
         Clock.schedule_once(self.initialize_telegram_client, 1.0)
         
         return sm
-    
     def initialize_telegram_client(self, dt):
         try:
             from src.api.telegram.client import TelegramClient
@@ -59,38 +66,53 @@ class ArtikGram(App):
                 print(f"Error checking auth state: {e}")
     
 
-    
     def process_telegram_updates(self, dt):
         if self.telegram_client:
             try:
-                update = self.telegram_client.receive(0)
-                if update and update.get('@type') == 'updateAuthorizationState':
-                    auth_state = update.get('authorization_state', {})
-                    self.handle_auth_state(auth_state)
+                for _ in range(10):
+                    update = self.telegram_client.receive(0)
+                    if not update:
+                        break
+                    
+                    print(f"Processing update: {update.get('@type')}")
+                    
+                    
+                    if update.get('@type') == 'updateAuthorizationState':
+                        auth_state = update.get('authorization_state', {})
+                        self.handle_auth_state(auth_state)
+                    
+                    
+                    if self.root and hasattr(self.root, 'current_screen'):
+                        current_screen = self.root.current_screen
+                        if hasattr(current_screen, 'handle_update'):
+                            current_screen.handle_update(update)
+                            
             except Exception as e:
                 print(f"Error processing Telegram updates: {e}")
-    
+
     def handle_auth_state(self, auth_state):
         state_type = auth_state.get('@type')
-        
+            
         if state_type == 'authorizationStateWaitCode':
             code_info = auth_state.get('code_info', {})
             code_type = code_info.get('type', {}).get('@type', '')
-            
+                
             if code_type == 'authenticationCodeTypeSms':
                 print("SMS code sent to your phone")
             elif code_type == 'authenticationCodeTypeTelegramMessage':
                 print("Code sent via Telegram message")
-            
+                
             self.root.current = 'login2'
-            
+                
         elif state_type == 'authorizationStateReady':
             print("Authorization completed!")
             settings_manager.set_authorized(
                 phone_number=self.current_phone_number
             )
             self.root.current = 'homescreen'
-            
+
+            Clock.schedule_once(lambda dt: self.load_initial_chats(), 0.5)
+                
         elif state_type == 'authorizationStateWaitPassword':
             print("2FA password required")
             password_hint = auth_state.get('password_hint', '')
@@ -127,6 +149,19 @@ class ArtikGram(App):
             print("Authorization closed")
 
             settings_manager.set_unauthorized()
+    
+    def load_initial_chats(self):
+        try:
+            if self.telegram_client:
+                
+                query = {
+                    "@type": "getChats",
+                    "chat_list": {"@type": "chatListMain"},
+                    "limit": 50
+                }
+                self.telegram_client._send(query)
+        except Exception as e:
+            print(f"Error loading initial chats: {e}")
     
     def format_country_code(self, text_input):
         text = text_input.text
