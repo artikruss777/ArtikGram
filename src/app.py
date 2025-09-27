@@ -19,7 +19,12 @@ class ArtikGram(App):
     current_phone_number = ""
     
     def build(self):
-        Builder.load_file('src/kv/my.kv')
+        Builder.load_file('src/kv/homescreen.kv')
+        Builder.load_file('src/kv/login1.kv')
+        Builder.load_file('src/kv/login2.kv')
+        Builder.load_file('src/kv/login3.kv')
+        Builder.load_file('src/kv/welcome.kv')
+        Builder.load_file('src/kv/screenmanager.kv')
         sm = ScreenManager()
         sm.add_widget(WelcomeScreen(name='welcome'))
         sm.add_widget(LoginScreen1(name='login1'))

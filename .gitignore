@@ -6,6 +6,7 @@
 ### Python ###
 script1.py
 code_dump.txt
+user_settings.json
 # Byte-compiled / optimized / DLL files
 __pycache__/
 *.py[cod]
