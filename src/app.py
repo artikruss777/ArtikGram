@@ -13,6 +13,7 @@ from src.screens.login2 import LoginScreen2
 from src.screens.login3 import LoginScreen3
 from src.screens.homescreen import HomeScreen
 from src.utils.settings import settings_manager
+from src.screens.sidebar import Sidebar
 
 class ArtikGram(App):
     telegram_client = None
@@ -25,6 +26,7 @@ class ArtikGram(App):
         Builder.load_file('src/kv/login3.kv')
         Builder.load_file('src/kv/welcome.kv')
         Builder.load_file('src/kv/screenmanager.kv')
+        Builder.load_file('src/kv/sidebar.kv')
         sm = ScreenManager()
         sm.add_widget(WelcomeScreen(name='welcome'))
         sm.add_widget(LoginScreen1(name='login1'))
