@@ -1,6 +1,39 @@
 <HomeScreen>:
     BoxLayout:
         orientation: 'vertical'
-        padding: dp(30)
-        spacing: dp(20)
+        spacing: 0 
         
+        BoxLayout:
+            size_hint_y: None
+            height: 56  
+            padding: [10, 5, 10, 5]
+            canvas.before:
+                Color:
+                    rgba: 0.314, 0.0, 1, 1
+                Rectangle:
+                    pos: self.pos
+                    size: self.size
+            
+            Button:
+                size_hint_x: None
+                width: 56
+                text: '='
+                background_color: 0,0,0,0
+            
+            Label:
+                text: 'ArtikGram'
+                font_size: 20
+                bold: True
+                color: 1, 1, 1, 1
+            
+        
+        ScrollView:
+            BoxLayout:
+                orientation: 'vertical'
+                size_hint_y: Non cbe
+                height: self.minimum_height
+                
+                Label:
+                    text: 'Coming soon...'
+                    size_hint_y: None
+                    height: 40
