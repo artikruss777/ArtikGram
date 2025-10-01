@@ -1,6 +1,6 @@
 from kivy.app import App
 from kivy.uix.screenmanager import ScreenManager
-from kivy.properties import StringProperty, BooleanProperty
+from kivy.properties import StringProperty, BooleanProperty, ListProperty
 import re
 from kivy.clock import Clock
 from kivy.lang import Builder
@@ -18,6 +18,7 @@ from src.screens.sidebar import Sidebar
 class ArtikGram(App):
     telegram_client = None
     current_phone_number = ""
+    chats = ListProperty([])
     
     def build(self):
         Builder.load_file('src/kv/homescreen.kv')
@@ -51,6 +52,12 @@ class ArtikGram(App):
             self.telegram_client.initialize()
             if settings_manager.is_user_authorized():
                 self._check_current_auth_state()
+                
+            if self.telegram_client.chat_handler:
+                self.telegram_client.chat_handler.on_chats_loaded = self.on_chats_loaded
+            
+            if settings_manager.is_user_authorized():
+                self._check_current_auth_state()
             
             Clock.schedule_interval(self.process_telegram_updates, 0.1)
             
@@ -65,15 +72,65 @@ class ArtikGram(App):
             except Exception as e:
                 print(f"Error checking auth state: {e}")
     
+    def handle_telegram_update(self, update):
+        if not update:
+            return
+        
+        update_type = update.get('@type')
+        
+        if update_type == 'updateAuthorizationState':
+            auth_state = update.get('authorization_state', {})
+            self.handle_auth_state(auth_state)
+        
+        elif update_type == 'chats':
+            if self.telegram_client and self.telegram_client.chat_handler:
+                self.telegram_client.chat_handler.process_chats_response(update)
+        
+        elif update_type == 'chat':
+            if self.telegram_client and self.telegram_client.chat_handler:
+                self.telegram_client.chat_handler._handle_chat_info(update)
+        
+        elif update_type in ['updateChatLastMessage', 'updateNewChat']:
+            if self.telegram_client and self.telegram_client.chat_handler:
+                self.telegram_client.chat_handler.handle_update(update)
+        
+        elif update_type == 'error':
+            error_code = update.get('code', 0)
+            error_message = update.get('message', 'Unknown error')
+            print(f"Telegram error {error_code}: {error_message}")
+            
+            if error_code == 420:
+                wait_time = getattr(update, 'parameters', None)
+                if wait_time:
+                    print(f"FLOOD_WAIT: need to wait {wait_time} seconds")
+        
+        if update_type not in ['updateOption', 'updateConnectionState']:
+            print(f"Telegram update: {update_type}")
+
+
+    def on_chats_loaded(self, chats):
+        self.chats = chats
+        print(f"Chats loaded in app: {len(chats)}")
+        
+        
+        if self.root and hasattr(self.root, 'get_screen'):
+            try:
+                home_screen = self.root.get_screen('homescreen')
+                if home_screen and hasattr(home_screen, 'update_chats'):
+                    home_screen.update_chats(self.chats)
+            except Exception as e:
+                print(f"Error updating home screen: {e}")
 
     
     def process_telegram_updates(self, dt):
         if self.telegram_client:
             try:
-                update = self.telegram_client.receive(0)
-                if update and update.get('@type') == 'updateAuthorizationState':
-                    auth_state = update.get('authorization_state', {})
-                    self.handle_auth_state(auth_state)
+                for _ in range(10):
+                    update = self.telegram_client.receive(0)
+                    if update:
+                        self.handle_telegram_update(update)
+                    else:
+                        break
             except Exception as e:
                 print(f"Error processing Telegram updates: {e}")
     

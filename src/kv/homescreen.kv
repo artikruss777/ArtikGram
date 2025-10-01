@@ -1,4 +1,6 @@
 <HomeScreen>:
+    chats_container: chats_scroll_container
+    
     BoxLayout:
         orientation: 'horizontal'
         spacing: 0
@@ -38,27 +40,83 @@
                     bold: True
                     color: 1, 1, 1, 1
                     
-                Widget:  # Spacer
+                Widget:
                     size_hint_x: None
                     width: 56
             
             ScrollView:
+                do_scroll_x: False
+                canvas.before:
+                    Color:
+                        rgba: 0, 0, 0, 1
+                    Rectangle:
+                        pos: self.pos
+                        size: self.size
+                
                 BoxLayout:
+                    id: chats_scroll_container
                     orientation: 'vertical'
                     size_hint_y: None
                     height: self.minimum_height
-                    padding: 20
-                    spacing: 10
+                    padding: 0
+                    spacing: 1
                     
                     Label:
-                        text: 'Welcome to ArtikGram!'
-                        font_size: 24
-                        bold: True
-                        size_hint_y: None
-                        height: 40
-                        
-                    Label:
-                        text: 'Your chats will appear here soon...'
+                        text: 'Loading chats...'
                         font_size: 16
                         size_hint_y: None
-                        height: 30
+                        height: 40
+                        color: 1, 1, 1, 1
+
+<ChatItem>:
+    canvas.before:
+        Color:
+            rgba: 0.1, 0.1, 0.1, 1
+        Rectangle:
+            pos: self.pos
+            size: self.size
+    
+    orientation: 'horizontal'
+    size_hint_y: None
+    height: 70
+    padding: [10, 5]
+    spacing: 10
+    
+    BoxLayout:
+        size_hint: (None, None)
+        size: (50, 50)
+        canvas.before:
+            Color:
+                rgba: 0.314, 0.0, 1, 1
+            Rectangle:
+                pos: self.pos
+                size: self.size
+        
+        Label:
+            text: root.avatar_text
+            color: 1, 1, 1, 1
+            font_size: '16sp'
+            bold: True
+    
+    BoxLayout:
+        orientation: 'vertical'
+        size_hint_x: 0.8
+        
+        Label:
+            text: root.chat_title
+            size_hint_y: 0.6
+            text_size: self.width, None
+            halign: 'left'
+            valign: 'middle'
+            font_size: '14sp'
+            bold: True
+            color: 1, 1, 1, 1
+        
+        Label:
+            text: root.last_message
+            size_hint_y: 0.4
+            text_size: self.width, None
+            halign: 'left'
+            valign: 'top'
+            font_size: '12sp'
+            color: 0.8, 0.8, 0.8, 1

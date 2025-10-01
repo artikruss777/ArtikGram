@@ -1,6 +1,6 @@
 from .tdlib import TDJsonClient
 from .auth import PhoneAuth, CodeAuth, PasswordAuth
-from .handlers import AuthHandler
+from .handlers import AuthHandler, ChatHandler
 from ...utils.config_loader import load_config
 
 class TelegramClient:
@@ -10,7 +10,9 @@ class TelegramClient:
         self.code_auth = CodeAuth(self)
         self.password_auth = PasswordAuth(self)
         self.auth_handler = AuthHandler(self)
+        self.chat_handler = ChatHandler(self)
         self.is_authorized = False
+        self.chats = []
         
         config_api_id, config_api_hash = load_config()
         
@@ -29,6 +31,7 @@ class TelegramClient:
             raise ValueError("API Hash must be a string")
         
         self.auth_handler.on_auth_state_change = self._on_auth_state_change
+        self.chat_handler.on_chats_loaded = self._on_chats_loaded
     
     def initialize(self):
         self._send({
@@ -62,6 +65,20 @@ class TelegramClient:
     def _on_auth_state_change(self, state_type, auth_state):
         if state_type == 'authorizationStateReady':
             self.is_authorized = True
+            self.load_chats()
+    
+    def _on_chats_loaded(self, chats):
+        self.chats = chats
+        print(f"Loaded {len(chats)} chats")
+    
+    def load_chats(self):
+        if self.is_authorized:
+            print("Client: Loading chats (authorized)")
+            self.chat_handler.load_chats()
+        else:
+            print("Client: Cannot load chats - not authorized")
+    def get_chats(self):
+        return self.chats
     
     def close(self):
         if hasattr(self, 'td_client') and self.td_client:
@@ -73,11 +90,3 @@ class TelegramClient:
     
     def __exit__(self, exc_type, exc_val, exc_tb):
         self.close()
-    
-    def _on_auth_state_change(self, state_type, auth_state):
-        if state_type == 'authorizationStateReady':
-            self.is_authorized = True
-            print("User successfully authorized")
-        elif state_type == 'authorizationStateClosed':
-            self.is_authorized = False
-            print("User authorization ended")

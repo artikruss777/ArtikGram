@@ -1,3 +1,4 @@
 from .auth_handler import AuthHandler
+from .chat_handler import ChatHandler
 
-__all__ = ['AuthHandler']
+__all__ = ['AuthHandler', 'ChatHandler']
