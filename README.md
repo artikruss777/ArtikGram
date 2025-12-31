@@ -1,3 +1,5 @@
+# This repo is closed I started to rewrite it!
+
 # ArtikGram
 
 <p align="center">
